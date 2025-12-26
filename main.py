@@ -4,6 +4,8 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from utils.database import create_database
+
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
 GUILD_ID = discord.Object(id=int(os.getenv('GUILD_ID')))
@@ -32,4 +34,5 @@ async def main():
         await bot.start(TOKEN)
 
 if __name__ == '__main__':
+    create_database()
     asyncio.run(main())
