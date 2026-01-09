@@ -18,9 +18,14 @@ class CarlBot(commands.Bot):
         super().__init__(command_prefix='!', intents=intents)
 
     async def setup_hook(self):
-        for extension in os.listdir('./cogs'):
-            if extension.endswith('.py'):
-                await self.load_extension(f'cogs.{extension[:-3]}')
+        for filename in os.listdir('./cogs'):
+            if filename.endswith('.py'):
+                await self.load_extension(f'cogs.{filename[:-3]}')
+            elif os.path.isdir(f'./cogs/{filename}') and not filename.startswith('__'):
+                try:
+                    await self.load_extension(f'cogs.{filename}')
+                except Exception as e:
+                    print(f"Failed to load folder cog {filename}: {e}")
 
         self.tree.copy_global_to(guild=GUILD_ID)
         await self.tree.sync(guild=GUILD_ID)

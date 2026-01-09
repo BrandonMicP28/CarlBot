@@ -21,6 +21,14 @@ def get_user(user_id):
             return User(user_id, STARTING_MONEY, 0)
         return User(user_data[0], user_data[1], user_data[2])
 
+def get_all_users_xp():
+    with sqlite3.connect('database.db') as connection:
+        c = connection.cursor()
+        c.execute('SELECT user_id, experience FROM members')
+        data = c.fetchall()
+
+        return {row[0]: row[1] for row in data}
+
 def database_change_money(user_id, amount):
     with sqlite3.connect('database.db') as connection:
         c = connection.cursor()
