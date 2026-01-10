@@ -1,0 +1,152 @@
+{
+  "classic light": {
+    "name": "Classic Light",
+    "description": "The original, clean, and easy-to-read look.",
+    "rarity": "Common",
+    "price": 100,
+    "correct_color": "6AAA64",
+    "misplaced_color": "C9B458",
+    "absent_color": "787C7E",
+    "unknown_color": "D3D6DA"
+  },
+  "classic dark": {
+    "name": "Classic Dark",
+    "description": "For those who prefer to solve puzzles in the dark.",
+    "rarity": "Common",
+    "price": 100,
+    "correct_color": "538D4E",
+    "misplaced_color": "B59F3B",
+    "absent_color": "3A3A3C",
+    "unknown_color": "2D2D2F"
+  },
+  "oceanic": {
+    "name": "Oceanic",
+    "description": "A calming palette of deep sea blue and sandy orange.",
+    "rarity": "Uncommon",
+    "price": 500,
+    "correct_color": "4A90E2",
+    "misplaced_color": "F5A623",
+    "absent_color": "2C3E50",
+    "unknown_color": "BDC3C7"
+  },
+  "forest floor": {
+    "name": "Forest Floor",
+    "description": "Earthy tones of rich soil, fallen leaves, and vibrant moss.",
+    "rarity": "Uncommon",
+    "price": 500,
+    "correct_color": "27AE60",
+    "misplaced_color": "D35400",
+    "absent_color": "5D4037",
+    "unknown_color": "A1887F"
+  },
+  "rose petal": {
+    "name": "Rose Petal",
+    "description": "A soft and vibrant theme inspired by a summer garden.",
+    "rarity": "Uncommon",
+    "price": 500,
+    "correct_color": "E91E63",
+    "misplaced_color": "4CAF50",
+    "absent_color": "607D8B",
+    "unknown_color": "CFD8DC"
+  },
+  "high contrast": {
+    "name": "High Contrast",
+    "description": "A bright and accessible palette designed for clarity.",
+    "rarity": "Rare",
+    "price": 1000,
+    "correct_color": "F5793A",
+    "misplaced_color": "0091D5",
+    "absent_color": "333333",
+    "unknown_color": "777777"
+  },
+  "royal decree": {
+    "name": "Royal Decree",
+    "description": "A regal combination of deep purple and shimmering gold.",
+    "rarity": "Rare",
+    "price": 1000,
+    "correct_color": "8E44AD",
+    "misplaced_color": "F1C40F",
+    "absent_color": "2C3E50",
+    "unknown_color": "95A5A6"
+  },
+  "sakura": {
+    "name": "Sakura",
+    "description": "Gentle colors inspired by cherry blossoms in the spring.",
+    "rarity": "Rare",
+    "price": 1000,
+    "correct_color": "FF69B4",
+    "misplaced_color": "A9D1A2",
+    "absent_color": "4A2F2B",
+    "unknown_color": "FFF8F6"
+  },
+  "synthwave sunset": {
+    "name": "Synthwave Sunset",
+    "description": "A retro 80s dream of neon magenta and cyan.",
+    "rarity": "Epic",
+    "price": 5000,
+    "correct_color": "FF00FF",
+    "misplaced_color": "00FFFF",
+    "absent_color": "2C003E",
+    "unknown_color": "9D4EDD"
+  },
+  "molten core": {
+    "name": "Molten Core",
+    "description": "Fiery colors forged in the heart of a volcano.",
+    "rarity": "Epic",
+    "price": 5000,
+    "correct_color": "FF4500",
+    "misplaced_color": "FFFF00",
+    "absent_color": "202020",
+    "unknown_color": "4D4D4D"
+  },
+  "bio-luminescent": {
+    "name": "Bio-Luminescent",
+    "description": "Glowing colors from the mysterious depths of the ocean.",
+    "rarity": "Epic",
+    "price": 5000,
+    "correct_color": "00F5D4",
+    "misplaced_color": "9B5DE5",
+    "absent_color": "001233",
+    "unknown_color": "4A5772"
+  },
+  "gold & onyx": {
+    "name": "Gold & Onyx",
+    "description": "The ultimate in luxury, crafted from pure gold and onyx.",
+    "rarity": "Legendary",
+    "price": 10000,
+    "correct_color": "FFD700",
+    "misplaced_color": "E5E4E2",
+    "absent_color": "1C1C1C",
+    "unknown_color": "4A4A4A"
+  },
+  "holographic": {
+    "name": "Holographic",
+    "description": "A shifting, futuristic palette that glimmers in the light.",
+    "rarity": "Legendary",
+    "price": 10000,
+    "correct_color": "00FF7F",
+    "misplaced_color": "DE3163",
+    "absent_color": "23293B",
+    "unknown_color": "B4C5E4"
+  },
+  "celestial": {
+    "name": "Celestial",
+    "description": "Cosmic colors drawn from distant stars and nebulae.",
+    "rarity": "Mythical",
+    "price": 50000,
+    "correct_color": "FDFD96",
+    "misplaced_color": "AEC6CF",
+    "absent_color": "0B0C10",
+    "unknown_color": "4C516D"
+  },
+  "aetherium": {
+    "name": "Aetherium",
+    "description": "An ethereal theme of pure magic and crystalline light.",
+    "rarity": "Mythical",
+    "price": 50000,
+    "correct_color": "98FB98",
+    "misplaced_color": "E0BBE4",
+    "absent_color": "2E2E2E",
+    "unknown_color": "DCDCDC"
+  }
+}
