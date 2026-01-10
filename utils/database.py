@@ -34,6 +34,13 @@ def database_change_money(user_id, amount):
         c = connection.cursor()
         c.execute("""UPDATE members SET money = money + ? WHERE user_id = ?""", (amount,user_id))
 
+
+def database_change_experience(user_id, amount):
+    with sqlite3.connect('database.db') as connection:
+        c = connection.cursor()
+        c.execute("""UPDATE members SET experience = experience + ? WHERE user_id = ?""", (amount, user_id))
+
+
 class User:
     def __init__(self, user_id, money, experience):
         self.user_id = user_id
@@ -43,3 +50,7 @@ class User:
     def change_money(self, amount):
         database_change_money(self.user_id, amount)
         self.money += amount
+
+    def change_experience(self, amount):
+        database_change_experience(self.user_id, amount)
+        self.experience += amount

@@ -83,6 +83,16 @@ class Wordle:
 
     def generate_wordle_image(self):
 
+        def generate_line(start_x, start_y, width, input_stream, height=0, gap=5):
+            if height == 0:
+                height = width
+            for column , (letter, feedback) in enumerate(input_stream):
+                color = skin.get(feedback)
+                absolute_x = start_x + column * (width + gap)
+                draw.rectangle((absolute_x, start_y, absolute_x + width, start_y + height), fill=f"#{color}")
+                text_color = "black" if feedback == "unknown" else "white"
+                draw.text((absolute_x + width / 2, start_y + height / 2), letter, font=font, fill=text_color, anchor="mm")
+
         def print_guesses(start_x, start_y):
             square_size = 50
             gap = 5
@@ -93,25 +103,22 @@ class Wordle:
                     absolute_y = start_y + row * (square_size + gap)
 
                     if len(self.guesses) > row:
-                        guess_color = skin.get(self.guesses[row][col][1])
+                        generate_line(absolute_x, absolute_y, square_size, self.guesses[row])
+                        break
                     else:
-                        guess_color = skin.get("unknown")
+                        draw.rectangle([absolute_x, absolute_y, absolute_x + square_size, absolute_y + square_size], fill=f"#{skin.get('unknown')}")
 
-                    draw.rectangle([absolute_x, absolute_y, absolute_x + square_size, absolute_y + square_size], fill=f"#{guess_color}")
-
-                    if len(self.guesses) > row:
-                        guess_letter = self.guesses[row][col][0]
-                        draw.text((absolute_x + square_size / 2, absolute_y + square_size / 2), guess_letter, font=font, fill="white", anchor="mm")
-
-        background = Image.new("RGBA", (1000, 1000))
+        background = Image.new("RGBA", (345, 465))
         draw = ImageDraw.Draw(background)
         font = ImageFont.truetype(BASE_DIR / "assets" / "fonts" / "arial.ttf", 20)
         skin = {"unknown": "D3D6DA", "wrong": "787C7E", "misplaced": "C9B458", "known": "6AAA64"}
-        print_guesses(0, 0)
+        print_guesses(37.5, 0) #270 wide
+        generate_line(0, 335, 30, list(self.letter_responses.items())[0:10], height=40) #345 wide
+        generate_line(17.5, 380, 30, list(self.letter_responses.items())[10:19], height=40) #310 wide
+        generate_line(52.5, 425, 30, list(self.letter_responses.items())[19:27], height=40) #240 wide
 
         buffer = io.BytesIO()
         background.save(buffer, format="PNG")
         buffer.seek(0)
-        background.show()
-        return buffer.read()
+        return buffer
 
