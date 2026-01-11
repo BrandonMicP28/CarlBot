@@ -12,15 +12,17 @@ class Profiles(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name='profile', description='Shows your profile!')
-    async def profile(self, interaction: discord.Interaction):
-        user = get_user(interaction.user.id)
+    async def profile(self, interaction: discord.Interaction, target: discord.Member=None):
+        if target is None:
+            target = interaction.user
+        user = get_user(target.id)
         level = get_level(user.experience)
-        em = discord.Embed(title=f"{interaction.user.name}'s profile!")
+        em = discord.Embed(title=f"{target.name}'s profile!")
         em.add_field(name="Money:", value=f"${user.money}", inline=False)
         em.add_field(name="Experience Till Next Level:", value=f"{level_to_xp(level + 1) - user.experience}", inline=False)
         em.add_field(name=f"{generate_xp_bar(user.experience)}", value=f"", inline=False)
 
-        em.set_thumbnail(url=interaction.user.display_avatar.url)
+        em.set_thumbnail(url=target.display_avatar.url)
 
         await interaction.response.send_message(embed=em)
 
