@@ -21,6 +21,11 @@ def get_user(user_id):
             return User(user_id, STARTING_MONEY, 0)
         return User(user_data[0], user_data[1], user_data[2])
 
+def new_user(user_id, money, experience):
+    with sqlite3.connect('database.db') as connection:
+        c = connection.cursor()
+        c.execute('INSERT INTO MEMBERS (user_id, money, experience) VALUES (?, ?, ?)', (user_id, money, experience))
+
 def get_all_users_xp():
     with sqlite3.connect('database.db') as connection:
         c = connection.cursor()

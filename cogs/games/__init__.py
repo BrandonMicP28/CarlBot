@@ -6,9 +6,9 @@ from discord import app_commands
 from discord.ext import commands
 
 from cogs.games.Wordle import Wordle
+from cogs.games.finish_menu import create_summary_menu, ReplayButton
 from utils.database import get_user
 from utils.leveling import get_level
-from discord.ui import View, button
 
 class Games(commands.Cog):
     def __init__(self, bot):
@@ -42,7 +42,14 @@ class Games(commands.Cog):
         thread = await interaction.channel.create_thread(
             name=f"{member.name}'s Wordle",
             auto_archive_duration=60,
+            type=discord.ChannelType.public_thread
         )
+        user = get_user(member.id)
+
+        total_money_gained = 0
+        total_xp_gained = 0
+        starting_money = user.money
+        starting_xp = user.experience
 
         await interaction.response.send_message(f"Wordle Thread Created! {thread.jump_url}", ephemeral=True)
         wordle = Wordle(6)
@@ -54,25 +61,45 @@ class Games(commands.Cog):
         def check(message: discord.Message):
             return message.author.id == member.id and message.channel.id == thread.id
 
-        while wordle.game_state == "ongoing":
-            msg = await self.bot.wait_for('message', check=check)
-            if wordle.make_guess(msg.content):
+        while True:
+            while wordle.game_state == "ongoing":
+                msg = await self.bot.wait_for('message', check=check)
+                if wordle.make_guess(msg.content):
+                    file = discord.File(fp=wordle.generate_wordle_image(), filename="wordle.png")
+                    await image_message.edit(attachments=[file])
+                await msg.delete()
+            await thread.send(f"You {wordle.game_state.capitalize()}!")
+            if wordle.game_state == "lost":
+                await thread.send(f"Word was: {wordle.answer.capitalize()}!")
+            else:
+                user_level = get_level(user.experience)
+                payout = int((50 / len(wordle.guesses)-4.5) * (math.pow(user_level, 1.1)/10+1))
+                exp_gain = int(50 / len(wordle.guesses) * 5.6)
+
+                total_money_gained += payout
+                total_xp_gained += exp_gain
+
+                user.change_money(payout)
+                user.change_experience(exp_gain)
+                await thread.send(f"You got **${payout}** and **{exp_gain} EXP**!")
+
+            summary_embed = create_summary_menu(total_money_gained, starting_money, xp_gained=total_xp_gained, xp=starting_xp)
+            summary_embed.set_thumbnail(url=member.display_avatar.url)
+            replay_buttons = ReplayButton(60)
+
+            await thread.send(embed=summary_embed, view=replay_buttons)
+            await replay_buttons.wait()
+
+            if replay_buttons.result == "terminate":
+                break
+            else:
+                await thread.purge(after=image_message)
+                wordle.replay()
                 file = discord.File(fp=wordle.generate_wordle_image(), filename="wordle.png")
                 await image_message.edit(attachments=[file])
-            await msg.delete()
-        await thread.send(f"You {wordle.game_state.capitalize()}!")
-        if wordle.game_state == "lost":
-            await thread.send(f"Word was: {wordle.answer.capitalize()}!")
-        else:
-            user = get_user(member.id)
-            user_level = get_level(user.experience)
-            payout = int((50 / len(wordle.guesses)-4.5) * (math.pow(user_level, 1.1)/10+1))
-            exp_gain = int(50 / len(wordle.guesses) * 5.6)
-            user.change_money(payout)
-            user.change_experience(exp_gain)
-            thread.send(f"You got **${payout}** and **{exp_gain} EXP**!")
 
-    class replay_buttons(View)
+        await thread.send("Closing Thread")
+        await thread.delete()
 
 
 

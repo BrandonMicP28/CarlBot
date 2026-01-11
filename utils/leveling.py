@@ -3,8 +3,7 @@ import math
 from utils.database import User
 
 
-def get_level(user: User):
-    xp = user.experience
+def get_level(xp: int):
     for level in range(1001):
         if level_to_xp(level + 1) > xp:
             return level

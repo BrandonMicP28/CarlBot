@@ -9,11 +9,12 @@ from discord.ui import View, button
 from utils.database import get_user, get_all_users_xp
 from utils.leveling import get_level, level_to_xp
 
+VOTER_REQUIREMENT = 1
 
 class Democracy(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.voter_level_req = 1
+        self.voter_level_req = VOTER_REQUIREMENT
         self.voter_xp_req = level_to_xp(self.voter_level_req)
 
     def valid_voters(self, interaction: discord.Interaction):
@@ -31,6 +32,17 @@ class Democracy(commands.Cog):
                 valid_voters.append(member)
         return valid_voters
 
+    @app_commands.command(name='voters', description='Shows all members who meet the level requirement to vote!')
+    async def voters(self, interaction: discord.Interaction):
+        try:
+            valid_voters = self.valid_voters(interaction)
+            embed = discord.Embed(title="Valid Voters")
+            for member in valid_voters:
+                embed.add_field(name=member.name, value="", inline=False)
+            await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            print(e)
+
 
     @app_commands.command(name='punt', description='Kick a member from the server with 1/3 vote of online players (minimum of 3 votes to kick)')
     async def punt(self, interaction: discord.Interaction, target: discord.Member):
@@ -44,12 +56,13 @@ class Democracy(commands.Cog):
         embed.set_thumbnail(url=target.avatar.url)
         vote_start_time = math.floor(time.time())
         embed.add_field(name="Vote Ends:", value=f"<t:{vote_start_time + vote_time}:R>")
-        vote = PuntButtons(vote_time)
-        await interaction.response.send_message(embed=embed, view=vote)
+        valid_voters = self.valid_voters(interaction)
+        num_valid_voters = len(valid_voters)
+        vote = PuntButtons(vote_time, valid_voters)
+        await interaction.response.send_message(f"Starting Vote on Punting {target.mention}")
+        await interaction.followup.send(embed=embed, view=vote)
 
         await vote.wait()
-
-        num_valid_voters = len(self.valid_voters(interaction))
 
         yesVotes = len(vote.yesVoters)
         noVotes = len(vote.noVoters)
@@ -62,10 +75,11 @@ class Democracy(commands.Cog):
 
 
 class PuntButtons(View):
-    def __init__(self, vote_time):
+    def __init__(self, vote_time, valid_voters):
         super().__init__(timeout=vote_time)
         self.yesVoters = []
         self.noVoters = []
+        self.valid_voters = valid_voters
 
     def update_labels(self):
         self.children[0].label = str(len(self.yesVoters))
@@ -74,6 +88,9 @@ class PuntButtons(View):
     @button(label='0', style=discord.ButtonStyle.blurple, emoji="✅")
     async def kick_agree(self, interaction: discord.Interaction, button: discord.ui.Button):
         voter_id: int = interaction.user.id
+        if interaction.user not in self.valid_voters:
+            await interaction.response.send_message(f"You must be at least level {VOTER_REQUIREMENT} to vote", ephemeral=True)
+            return
 
         if voter_id in self.noVoters:
             self.noVoters.remove(voter_id)
@@ -88,6 +105,9 @@ class PuntButtons(View):
     @button(label='0', style=discord.ButtonStyle.blurple, emoji="❌")
     async def kick_disagree(self, interaction: discord.Interaction, button: discord.ui.Button):
         voter_id: int = interaction.user.id
+        if interaction.user not in self.valid_voters:
+            await interaction.response.send_message(f"You must be at least level {VOTER_REQUIREMENT} to vote", ephemeral=True)
+            return
 
         if voter_id in self.yesVoters:
             self.yesVoters.remove(voter_id)

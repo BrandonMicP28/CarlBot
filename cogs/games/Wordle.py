@@ -81,6 +81,12 @@ class Wordle:
         for guess in old_guesses:
             self.make_guess(guess)
 
+    def replay(self):
+        self.guesses = []
+        self.letter_responses = {letter: "unknown" for letter in "QWERTYUIOPASDFGHJKLZXCVBNM"}
+        self.game_state = "ongoing"
+        self.answer = generate_answer()
+
     def generate_wordle_image(self):
 
         def generate_line(start_x, start_y, width, input_stream, height=0, gap=5):

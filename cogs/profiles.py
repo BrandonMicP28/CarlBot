@@ -2,7 +2,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from cogs.games.finish_menu import generate_xp_bar
 from utils.database import get_user
+from utils.leveling import get_level, level_to_xp
 
 
 class Profiles(commands.Cog):
@@ -12,9 +14,12 @@ class Profiles(commands.Cog):
     @app_commands.command(name='profile', description='Shows your profile!')
     async def profile(self, interaction: discord.Interaction):
         user = get_user(interaction.user.id)
+        level = get_level(user.experience)
         em = discord.Embed(title=f"{interaction.user.name}'s profile!")
-        em.add_field(name="Money", value=f"${user.money}", inline=False)
-        em.add_field(name="Experience", value=f"${user.experience}", inline=False)
+        em.add_field(name="Money:", value=f"${user.money}", inline=False)
+        em.add_field(name="Experience Till Next Level:", value=f"{level_to_xp(level + 1) - user.experience}", inline=False)
+        em.add_field(name=f"{generate_xp_bar(user.experience)}", value=f"", inline=False)
+
         em.set_thumbnail(url=interaction.user.display_avatar.url)
 
         await interaction.response.send_message(embed=em)
