@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from cogs.games.finish_menu import generate_xp_bar
-from utils.database import get_user
+from utils.database import get_user, get_leaderboard
 from utils.leveling import get_level, level_to_xp
 
 
@@ -25,6 +25,44 @@ class Profiles(commands.Cog):
         em.set_thumbnail(url=target.display_avatar.url)
 
         await interaction.response.send_message(embed=em)
+
+
+    @app_commands.command(name='leaderboard', description='Leaderboard of users (can be sorted by different categories)!')
+    @app_commands.describe(category='What to sort by')
+    @app_commands.choices(category=[
+        app_commands.Choice(name="Money", value="money"),
+        app_commands.Choice(name="Experience", value="experience")
+    ])
+    async def leaderboard(self, interaction: discord.Interaction, category: str = "experience"):
+        try:
+            size = 10
+            await interaction.response.defer()
+
+            leaderboard = get_leaderboard(size, category)
+            embed = discord.Embed(title=f"{category.capitalize()} Leaderboard!")
+            for i, user in enumerate(leaderboard):
+
+                member: discord.Member = self.bot.get_user(user.id)
+                if member is None:
+                    try:
+                        member = await self.bot.fetch_user(user.id)
+                    except discord.NotFound:
+                        continue
+
+                if i == 0:
+                    embed.set_thumbnail(url=member.display_avatar.url)
+
+                if category == "experience":
+                    category_value = f"{user.experience} XP"
+                else:
+                    category_value = f"${user.money}"
+
+                embed.add_field(name=f"{i + 1}. {member.name}[{get_level(user.experience)}]",value=category_value, inline=False)
+
+            await interaction.followup.send(embed=embed)
+        except Exception as e:
+            print(e)
+
 
 async def setup(bot):
     await bot.add_cog(Profiles(bot))

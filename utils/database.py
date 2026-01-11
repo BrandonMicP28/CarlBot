@@ -45,17 +45,26 @@ def database_change_experience(user_id, amount):
         c = connection.cursor()
         c.execute("""UPDATE members SET experience = experience + ? WHERE user_id = ?""", (amount, user_id))
 
+def get_leaderboard(size: int, category: str):
+    with sqlite3.connect('database.db') as connection:
+        valid_categories = ['experience', 'money']
+        if category not in valid_categories:
+            raise ValueError(f'Invalid category {category}')
+        c = connection.cursor()
+        c.execute(f"SELECT user_id, money, experience FROM members ORDER BY {category} DESC LIMIT ?", (size,))
+        data = c.fetchall()
+        return [User(member_data[0], member_data[1], member_data[2]) for member_data in data]
 
 class User:
     def __init__(self, user_id, money, experience):
-        self.user_id = user_id
+        self.id = user_id
         self.money = money
         self.experience = experience
 
     def change_money(self, amount):
-        database_change_money(self.user_id, amount)
+        database_change_money(self.id, amount)
         self.money += amount
 
     def change_experience(self, amount):
-        database_change_experience(self.user_id, amount)
+        database_change_experience(self.id, amount)
         self.experience += amount
