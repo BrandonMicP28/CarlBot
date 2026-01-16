@@ -81,7 +81,7 @@ class Games(commands.Cog):
 
                 user.change_money(payout)
                 user.change_experience(exp_gain)
-                await thread.send(f"You got **${payout}** and **{exp_gain} EXP**!")
+                await thread.send(f"You got **${payout}** and **{exp_gain}** XP!")
 
             summary_embed = create_summary_menu(total_money_gained, starting_money, xp_gained=total_xp_gained, xp=starting_xp)
             summary_embed.set_thumbnail(url=member.display_avatar.url)

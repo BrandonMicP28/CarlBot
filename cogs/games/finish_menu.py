@@ -12,13 +12,13 @@ class SummaryMenu:
 def create_summary_menu(money_gained, money, xp_gained=0, xp=0):
     embed = discord.Embed(title="Summary!")
     embed.add_field(name="Money Gained:", value=f"${money} + ${money_gained} -> ${money + money_gained}", inline=False)
-    if xp_gained > 0 and xp > 0:
-        embed.add_field(name="XP Gained:", value=f"{xp} + {xp_gained} -> {xp + xp_gained}", inline=False)
+    if xp_gained > 0:
+        embed.add_field(name="XP Gained:", value=f"{xp} + {xp_gained} -> {xp + xp_gained} XP", inline=False)
 
         level = get_level(xp + xp_gained)
         xp_till_level_up = level_to_xp(level+1) - (xp + xp_gained)
 
-        embed.add_field(name="XP Till Level Up:", value=xp_till_level_up, inline=True)
+        embed.add_field(name="XP Till Level Up:", value=f"{xp_till_level_up} XP", inline=True)
         embed.add_field(name=generate_xp_bar(xp+xp_gained), value="", inline=False)
     return embed
 

@@ -57,7 +57,7 @@ class Profiles(commands.Cog):
                 else:
                     category_value = f"${user.money}"
 
-                embed.add_field(name=f"{i + 1}. {member.name}[{get_level(user.experience)}]",value=category_value, inline=False)
+                embed.add_field(name=f"{i + 1}. {member.name} [{get_level(user.experience)}]",value=category_value, inline=False)
 
             await interaction.followup.send(embed=embed)
         except Exception as e:
