@@ -17,7 +17,7 @@ class Democracy(commands.Cog):
         self.voter_level_req = VOTER_REQUIREMENT
         self.voter_xp_req = level_to_xp(self.voter_level_req)
 
-    def valid_voters(self, interaction: discord.Interaction):
+    def valid_voters(self, interaction: discord.Interaction) -> list[discord.Member]:
         """
         creates a list of all voters with a minimum level
         :param interaction:
@@ -64,10 +64,10 @@ class Democracy(commands.Cog):
 
         await vote.wait()
 
-        yesVotes = len(vote.yesVoters)
-        noVotes = len(vote.noVoters)
+        yes_votes = len(vote.yesVoters)
+        no_votes = len(vote.noVoters)
 
-        if noVotes > yesVotes or yesVotes < num_valid_voters/3:
+        if no_votes > yes_votes or yes_votes < num_valid_voters/3:
             await interaction.followup.send(f"{target.mention} survives, for now")
         else:
             await target.kick(reason="The members have decided that it's better if you weren't here")

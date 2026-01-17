@@ -72,16 +72,21 @@ class Games(commands.Cog):
             if wordle.game_state == "lost":
                 await thread.send(f"Word was: {wordle.answer.capitalize()}!")
             else:
+                increased_streak = user.won_wordle_streak()
+                wordle_streak, _ = user.get_wordle_streak()
+
                 user_level = get_level(user.experience)
                 payout = int((50 / len(wordle.guesses)-4.5) * (math.pow(user_level, 1.1)/10+1))
-                exp_gain = int(50 / len(wordle.guesses) * 5.6)
+                exp_gain = int(50 / len(wordle.guesses) * 5.6) + wordle_streak
 
                 total_money_gained += payout
                 total_xp_gained += exp_gain
 
                 user.change_money(payout)
                 user.change_experience(exp_gain)
-                await thread.send(f"You got **${payout}** and **{exp_gain}** XP!")
+                if increased_streak:
+                    await thread.send(f"🔥 **Streak Increased:** You are now at **{wordle_streak:,}** Day{'s' if wordle_streak > 1 else ''}!")
+                await thread.send(f"You got **${payout:,}** and **{exp_gain:,}** XP!")
 
             summary_embed = create_summary_menu(total_money_gained, starting_money, xp_gained=total_xp_gained, xp=starting_xp)
             summary_embed.set_thumbnail(url=member.display_avatar.url)

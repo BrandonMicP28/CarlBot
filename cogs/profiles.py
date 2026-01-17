@@ -17,10 +17,14 @@ class Profiles(commands.Cog):
             target = interaction.user
         user = get_user(target.id)
         level = get_level(user.experience)
-        em = discord.Embed(title=f"{target.name}'s profile!")
-        em.add_field(name="Money:", value=f"${user.money}", inline=False)
-        em.add_field(name="Experience Till Next Level:", value=f"{level_to_xp(level + 1) - user.experience}", inline=False)
-        em.add_field(name=f"{generate_xp_bar(user.experience)}", value=f"", inline=False)
+        wordle_streak, _ = user.get_wordle_streak()
+        em = discord.Embed(
+            title=f"{target.name}'s profile!",
+            description=f"{generate_xp_bar(user.experience)}")
+        em.add_field(name="💵 Balance:", value=f"${user.money:,}", inline=True)
+        if wordle_streak > 0:
+            em.add_field(name="🔥 Wordle Streak:", value=f"{wordle_streak:,} day{'s' if wordle_streak > 1 else ''}!", inline=True)
+        em.add_field(name="✨ Experience Till Next Level:", value=f"{(level_to_xp(level + 1) - user.experience):,}", inline=False)
 
         em.set_thumbnail(url=target.display_avatar.url)
 
@@ -53,16 +57,30 @@ class Profiles(commands.Cog):
                     embed.set_thumbnail(url=member.display_avatar.url)
 
                 if category == "experience":
-                    category_value = f"{user.experience} XP"
+                    category_value = f"{user.experience:,} XP"
                 else:
-                    category_value = f"${user.money}"
+                    category_value = f"${user.money:,}"
+                level = get_level(user.experience)
+                level_color = get_level_color(level)
 
-                embed.add_field(name=f"{i + 1}. {member.name} [{get_level(user.experience)}]",value=category_value, inline=False)
+                embed.add_field(name="", value=f"```ansi\n{i + 1}. {member.name} [{level_color}{level:,}\u001b[0;37m]:\n{category_value}\n```",
+                                inline=False)
 
             await interaction.followup.send(embed=embed)
         except Exception as e:
             print(e)
 
+def get_level_color(level: int) -> str:
+    if level < 10: return "\u001b[1;30m"  # Stone (Gray)
+    if level < 20: return "\u001b[0;37m"  # Iron (White)
+    if level < 30: return "\u001b[0;32m"  # Moss (Dark Green)
+    if level < 40: return "\u001b[1;32m"  # Emerald (Bright Green)
+    if level < 50: return "\u001b[0;36m"  # Ice (Cyan)
+    if level < 60: return "\u001b[1;36m"  # Sky (Bright Cyan)
+    if level < 70: return "\u001b[0;35m"  # Void (Purple)
+    if level < 80: return "\u001b[1;35m"  # Magic (Pink)
+    if level < 90: return "\u001b[1;31m"  # Blood (Red)
+    return "\u001b[1;33m"  # God (Gold)
 
 async def setup(bot):
     await bot.add_cog(Profiles(bot))
