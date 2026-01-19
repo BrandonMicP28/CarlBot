@@ -38,37 +38,34 @@ class Profiles(commands.Cog):
         app_commands.Choice(name="Experience", value="experience")
     ])
     async def leaderboard(self, interaction: discord.Interaction, category: str = "experience"):
-        try:
-            size = 10
-            await interaction.response.defer()
+        size = 10
+        await interaction.response.defer()
 
-            leaderboard = get_leaderboard(size, category)
-            embed = discord.Embed(title=f"{category.capitalize()} Leaderboard!")
-            for i, user in enumerate(leaderboard):
+        leaderboard = get_leaderboard(size, category)
+        embed = discord.Embed(title=f"{category.capitalize()} Leaderboard!")
+        for i, user in enumerate(leaderboard):
 
-                member: discord.Member = self.bot.get_user(user.id)
-                if member is None:
-                    try:
-                        member = await self.bot.fetch_user(user.id)
-                    except discord.NotFound:
-                        continue
+            member: discord.Member = self.bot.get_user(user.id)
+            if member is None:
+                try:
+                    member = await self.bot.fetch_user(user.id)
+                except discord.NotFound:
+                    continue
 
-                if i == 0:
-                    embed.set_thumbnail(url=member.display_avatar.url)
+            if i == 0:
+                embed.set_thumbnail(url=member.display_avatar.url)
 
-                if category == "experience":
-                    category_value = f"{user.experience:,} XP"
-                else:
-                    category_value = f"${user.money:,}"
-                level = get_level(user.experience)
-                level_color = get_level_color(level)
+            if category == "experience":
+                category_value = f"{user.experience:,} XP"
+            else:
+                category_value = f"${user.money:,}"
+            level = get_level(user.experience)
+            level_color = get_level_color(level)
 
-                embed.add_field(name="", value=f"```ansi\n{i + 1}. {member.name} [{level_color}{level:,}\u001b[0;37m]:\n{category_value}\n```",
-                                inline=False)
+            embed.add_field(name="", value=f"```ansi\n{i + 1}. {member.name} [{level_color}{level:,}\u001b[0;37m]:\n{category_value}\n```",
+                            inline=False)
 
-            await interaction.followup.send(embed=embed)
-        except Exception as e:
-            print(e)
+        await interaction.followup.send(embed=embed)
 
 def get_level_color(level: int) -> str:
     if level < 10: return "\u001b[1;30m"  # Stone (Gray)

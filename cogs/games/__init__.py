@@ -1,5 +1,7 @@
+import asyncio
 import math
 import random
+from inspect import cleandoc
 
 import discord
 from discord import app_commands
@@ -25,16 +27,26 @@ class Games(commands.Cog):
         if user.money < amount or amount <= 0:
             await interaction.response.send_message("Invalid amount.", ephemeral=True)
             return
-
+        original_text = f"Flipping coin on {guess.value} for ${amount}"
+        await interaction.response.send_message(original_text)
         answer: str = random.choice(["heads", "tails"])
+        user.change_money(amount if guess.value == answer else -amount)
+
+        await asyncio.sleep(1)
 
         if guess.value == answer:
-            user.change_money(amount)
-            await interaction.response.send_message(f"{answer.capitalize()}, You Win!\nNew Balance is ${user.money}", ephemeral=False)
+            message = cleandoc(f"""
+            > 🪙 The coin landed on **{answer.capitalize()}**
+            > 🎉 You Won **${amount}**!
+            > 💰 New Balance: **${user.money}**
+            """)
         else:
-            user.change_money(-amount)
-            await interaction.response.send_message(f"{answer.capitalize()}, You Lost!\nNew Balance is ${user.money}",
-                                                    ephemeral=False)
+            message = cleandoc(f"""
+            > 🪙 The coin landed on **{answer.capitalize()}**
+            > 🥀 You Lost **${amount}**...
+            > 💰 New Balance: **${user.money}**
+            """)
+        await interaction.edit_original_response(content=f"{original_text}\n{message}")
 
     @app_commands.command(name='wordle', description='Play wordle for money and xp!')
     async def wordle(self, interaction: discord.Interaction):
@@ -68,7 +80,8 @@ class Games(commands.Cog):
                     file = discord.File(fp=wordle.generate_wordle_image(), filename="wordle.png")
                     await image_message.edit(attachments=[file])
                 await msg.delete()
-            await thread.send(f"You {wordle.game_state.capitalize()}!")
+            result_text = wordle.game_state.capitalize()
+            await thread.send(f"# {'🎉' if result_text == 'Won' else '🥀'} You {result_text}!")
             if wordle.game_state == "lost":
                 await thread.send(f"Word was: {wordle.answer.capitalize()}!")
             else:
@@ -85,8 +98,9 @@ class Games(commands.Cog):
                 user.change_money(payout)
                 user.change_experience(exp_gain)
                 if increased_streak:
-                    await thread.send(f"🔥 **Streak Increased:** You are now at **{wordle_streak:,}** Day{'s' if wordle_streak > 1 else ''}!")
-                await thread.send(f"You got **${payout:,}** and **{exp_gain:,}** XP!")
+                    await thread.send(f"> 🔥 **Streak Increased:** You are now at **{wordle_streak:,}** Day{'s' if wordle_streak > 1 else ''}!")
+                await thread.send((f"> You got **${payout:,}** and **{(exp_gain - wordle_streak):,} XP**\n"
+                                   f"> + **{wordle_streak:,} XP** from streak! 🔥"))
 
             summary_embed = create_summary_menu(total_money_gained, starting_money, xp_gained=total_xp_gained, xp=starting_xp)
             summary_embed.set_thumbnail(url=member.display_avatar.url)
@@ -105,8 +119,6 @@ class Games(commands.Cog):
 
         await thread.send("Closing Thread")
         await thread.delete()
-
-
 
 async def setup(bot):
     await bot.add_cog(Games(bot))
