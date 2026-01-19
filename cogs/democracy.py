@@ -1,3 +1,4 @@
+import asyncio
 import math
 import time
 
@@ -34,15 +35,12 @@ class Democracy(commands.Cog):
 
     @app_commands.command(name='voters', description='Shows all members who meet the level requirement to vote!')
     async def voters(self, interaction: discord.Interaction):
-        try:
-            valid_voters = self.valid_voters(interaction)
-            embed = discord.Embed(title="Valid Voters")
-            for member in valid_voters:
-                embed.add_field(name=member.name, value="", inline=False)
-            await interaction.response.send_message(embed=embed)
-        except Exception as e:
-            print(e)
+        valid_voters = self.valid_voters(interaction)
+        voters_str = ', '.join(voter.name for voter in valid_voters)
+        embed = discord.Embed(title=f"Valid Voters ({len(valid_voters)})",
+                              description=voters_str,)
 
+        await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name='punt', description='Kick a member from the server with 1/3 vote of online players (minimum of 3 votes to kick)')
     async def punt(self, interaction: discord.Interaction, target: discord.Member):
@@ -58,16 +56,17 @@ class Democracy(commands.Cog):
         embed.add_field(name="Vote Ends:", value=f"<t:{vote_start_time + vote_time}:R>")
         valid_voters = self.valid_voters(interaction)
         num_valid_voters = len(valid_voters)
-        vote = PuntButtons(vote_time, valid_voters)
+        vote = PuntButtons(valid_voters)
         await interaction.response.send_message(f"Starting Vote on Punting {target.mention}")
         await interaction.followup.send(embed=embed, view=vote)
 
-        await vote.wait()
+        await asyncio.sleep(vote_time)
+        vote.stop()
 
         yes_votes = len(vote.yesVoters)
         no_votes = len(vote.noVoters)
 
-        if no_votes > yes_votes or yes_votes < num_valid_voters/3:
+        if no_votes > yes_votes or yes_votes < num_valid_voters/3 or yes_votes < 3:
             await interaction.followup.send(f"{target.mention} survives, for now")
         else:
             await target.kick(reason="The members have decided that it's better if you weren't here")
@@ -75,8 +74,8 @@ class Democracy(commands.Cog):
 
 
 class PuntButtons(View):
-    def __init__(self, vote_time, valid_voters):
-        super().__init__(timeout=vote_time)
+    def __init__(self, valid_voters):
+        super().__init__(timeout=None)
         self.yesVoters = []
         self.noVoters = []
         self.valid_voters = valid_voters
