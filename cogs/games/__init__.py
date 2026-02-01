@@ -70,7 +70,7 @@ class Games(commands.Cog):
         wordle = Wordle(6)
         await thread.send("Send your first guess to start!")
 
-        file = discord.File(fp=wordle.generate_wordle_image(), filename="wordle.png")
+        file = image_to_discord(wordle.generate_wordle_image())
         image_message = await thread.send(file=file)
 
         def check(message: discord.Message):
@@ -80,7 +80,7 @@ class Games(commands.Cog):
             while wordle.game_state == "ongoing":
                 msg = await self.bot.wait_for('message', check=check)
                 if wordle.make_guess(msg.content):
-                    file = discord.File(fp=wordle.generate_wordle_image(), filename="wordle.png")
+                    file = image_to_discord(wordle.generate_wordle_image())
                     await image_message.edit(attachments=[file])
                 await msg.delete()
             result_text = wordle.game_state.capitalize()
@@ -117,7 +117,7 @@ class Games(commands.Cog):
             else:
                 await thread.purge(after=image_message)
                 wordle.replay()
-                file = discord.File(fp=wordle.generate_wordle_image(), filename="wordle.png")
+                file = image_to_discord(wordle.generate_wordle_image())
                 await image_message.edit(attachments=[file])
 
         await thread.send("Closing Thread")
@@ -134,23 +134,19 @@ class Games(commands.Cog):
 
         await interaction.response.send_message(f"Blackjack Thread Created! {thread.jump_url}", ephemeral=True)
 
-        players = [interaction.user]
+        starting_players = [interaction.user]
         embed = discord.Embed(title="Blackjack!", description="Click the join button join in on a game of blackjack!")
-        join_buttons = JoinGameButtons(players, embed)
+        join_buttons = JoinGameButtons(starting_players, embed)
         await thread.send(embed=embed, view=join_buttons)
 
         await join_buttons.wait()
 
-        blackjack = Blackjack(players)
-
-        users: dict[int, User] = {}
-        for player in blackjack.players:
-            users[player.member.id] = get_user(player.member.id)
+        blackjack = Blackjack(starting_players)
 
         while True:
             for player in blackjack.players[:]:
-                await thread.send(f"{player.member.name} enter your bet:")
-                user = users[player.member.id]
+                user = get_user(player.member.id)
+                await thread.send(f"{player.member.name} enter your bet:\n> Available Balance: ${user.money:,}")
                 bet = 0
                 while bet <= 0:
                     try:
@@ -172,6 +168,8 @@ class Games(commands.Cog):
                         blackjack.players.remove(player)
                         await thread.send(f"{player.member.name} has left the table!")
                         break
+
+                    user = get_user(player.member.id)
                     if msg_number > user.money:
                         await thread.send(f"You're too poor!")
                         continue
@@ -219,17 +217,44 @@ class Games(commands.Cog):
                 image = image_to_discord(blackjack.render_image())
                 await board_message.edit(attachments=[image])
 
+            sorted_players = sorted(blackjack.players, key=lambda p: p.hands[0].bet * blackjack_winning_multiplier(p.hands[0], blackjack.dealer_hand), reverse=True)
+            result_embed = discord.Embed(title="Blackjack Results!")
+            result_embed.set_thumbnail(url=sorted_players[0].member.avatar.url)
 
-
-            for player in blackjack.players:
+            total_money_results = 0
+            for player in sorted_players:
                 bet = player.hands[0].bet
-                winnings = blackjack_winning_multiplier(player.hands[0], blackjack.dealer_hand) * bet
-                user = users[player.member.id]
-                user.change_money(winnings)
-                await thread.send(f"{player.member.name} Won **${winnings - bet}**!")
+                money_back = blackjack_winning_multiplier(player.hands[0], blackjack.dealer_hand) * bet
+                winnings = money_back - bet
+                total_money_results += winnings
+
+                user = get_user(player.member.id)
+                user.change_money(money_back)
+
+                if winnings > 0:
+                    result_string = f"{player.member.name} Won **${winnings:,}**!"
+                elif winnings < 0:
+                    result_string = f"{player.member.name} Lost **${bet:,}**..."
+                else:
+                    result_string = f"{player.member.name} Tied!"
+
+                if len(sorted_players) <= 25:
+                    result_embed.add_field(name=result_string, value='')
+                else:
+                    if len(result_embed.fields) == 0:
+                        result_embed.add_field(name="result_string", value='')
+                    else:
+                        result_embed.set_field_at(index=0, name=f"{result_embed.fields[0].name}\n{result_string}", value="")
+
+            if total_money_results > 0:
+                result_embed.description = f"There was a net gain of **${total_money_results:,}**!"
+            elif total_money_results < 0:
+                result_embed.description = f"There was a net loss of **${abs(total_money_results):,}** 🥀"
+            else:
+                result_embed.description = "There was a net tie!"
 
             replay_view = ReplayButton(60)
-            await thread.send("Play Again?", view=replay_view)
+            await thread.send(embed=result_embed, view=replay_view)
 
             await replay_view.wait()
 
