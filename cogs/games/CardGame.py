@@ -28,7 +28,7 @@ class Deck:
         else:
             return None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.cards.__str__()
 
 class Hand:
@@ -38,9 +38,9 @@ class Hand:
         self.is_doubled = False
 
     @property
-    def blackjack_value(self):
+    def blackjack_value(self) -> int:
         value = 0
-        for card in self.cards:
+        for card in [card for card in self.cards if card.is_flipped]:
             value += card.blackjack_value
         for _ in range(len([card for card in self.cards if card.rank == 'A'])):
             if value > 21:
@@ -49,7 +49,7 @@ class Hand:
         return value
 
     @property
-    def is_soft(self):
+    def is_soft(self) -> bool:
         value = 0
         for card in self.cards:
             value += card.blackjack_value
@@ -60,7 +60,7 @@ class Hand:
                 aces -= 1
         return aces != 0
 
-    def render_image(self):
+    def render_image(self) -> Image.Image:
         number_of_cards = len(self.cards)
         card_distance_x = 60
         card_distance_y = 20
@@ -107,7 +107,7 @@ class Card:
             return faces.get(self.rank)
         return self.rank
 
-    def render_image(self):
+    def render_image(self) -> Image.Image:
         gap = 1
 
         suits = {
