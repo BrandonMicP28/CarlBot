@@ -13,11 +13,11 @@ with open(BASE_DIR / "assets" / "data" / "word_list.json") as f:
     for ans in ANSWER_LIST:
         WORD_LIST.add(ans)
 
-def generate_answer():
+def generate_answer() -> str:
     answer = random.choice(ANSWER_LIST)
     return answer.upper()
 
-def verify_guess(guess):
+def verify_guess(guess) -> bool:
     if len(guess) != 5:
         return False
 
@@ -34,7 +34,7 @@ class Wordle:
         self.letter_responses = {letter: "unknown" for letter in "QWERTYUIOPASDFGHJKLZXCVBNM"}
         self.game_state = "ongoing"
 
-    def make_guess(self, guess):
+    def make_guess(self, guess) -> bool:
         if not verify_guess(guess) or self.game_state != "ongoing":
             return False
 
@@ -123,8 +123,5 @@ class Wordle:
         generate_line(17.5, 380, 30, list(self.letter_responses.items())[10:19], height=40) #310 wide
         generate_line(52.5, 425, 30, list(self.letter_responses.items())[19:27], height=40) #240 wide
 
-        buffer = io.BytesIO()
-        background.save(buffer, format="PNG")
-        buffer.seek(0)
-        return buffer
+        return background
 
