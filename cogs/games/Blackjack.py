@@ -60,7 +60,7 @@ class Blackjack:
 
         self.players = [self.Player(member=member, hands=[Hand([])]) for member in members]
 
-    def deal_cards(self):
+    def deal_cards(self) -> bool:
 
         if len(self.deck.cards) < len(self.players) * 5 + 5:
             return False
@@ -84,7 +84,7 @@ class Blackjack:
     def deal_card(self, hand: Hand):
         hand.cards.append(self.deck.deal())
 
-    def deal_dealer(self, hit_on_soft_17=True):
+    def deal_dealer(self, hit_on_soft_17=True) -> bool:
         if self.dealer_hand.blackjack_value < 17 or (self.dealer_hand.blackjack_value <= 17 and self.dealer_hand.is_soft and hit_on_soft_17):
             self.dealer_hand.cards.append(self.deck.deal())
             return True
@@ -109,18 +109,23 @@ class Blackjack:
             member: Member
             img: Image.Image
             bet: int
+            hand_value: int
 
-        normal_card_scale = 0.5
+        normal_card_scale = 0.75
 
         dealer_padding_from_top = 50
         dealer_img = resize(self.dealer_hand.render_image(), normal_card_scale)
 
         background = TABLE_BACKGROUND.copy()
         draw = ImageDraw.Draw(background)
-        font = ImageFont.truetype(BASE_DIR / "assets" / "fonts" / "arial.ttf", size=10)
+        font = ImageFont.truetype(BASE_DIR / "assets" / "fonts" / "arial.ttf", size=11)
+
         background_mid_width = background.width // 2
         background_mid_height = background.height // 2
-        background.paste(dealer_img, (background_mid_width - dealer_img.width // 2, dealer_padding_from_top), dealer_img)
+        dealer_card_x = background_mid_width - dealer_img.width // 2
+        background.paste(dealer_img, (dealer_card_x, dealer_padding_from_top), dealer_img)
+        draw.text((dealer_card_x + dealer_img.width // 2, dealer_padding_from_top + dealer_img.height + 5),
+                  f"{self.dealer_hand.blackjack_value:,}", font=font, anchor="mm")
 
         players_info: list[RenderPlayerInfo] = []
         for player in self.players:
@@ -128,7 +133,8 @@ class Blackjack:
                 player_info = RenderPlayerInfo(
                     member=player.member,
                     img=resize(hand.render_image(), normal_card_scale),
-                    bet=hand.bet
+                    bet=hand.bet,
+                    hand_value=hand.blackjack_value
                 )
                 players_info.append(player_info)
 
@@ -172,8 +178,9 @@ class Blackjack:
                 img = resize(player_info.img, card_size)
 
                 background.paste(img, (int(starting_x), int(starting_y)), img)
-                draw.text((starting_x + width //2, starting_y - text_height), f"{player_info.member.name[:int(width/6)]}: ${player_info.bet}", font=font, anchor="mm")
-
+                draw.text((starting_x + width //2, starting_y - text_height), f"{player_info.member.name[:int(width/6)]}: ${player_info.bet:,}", font=font, anchor="mm")
+                draw.text((starting_x + width // 2, starting_y - text_height + row_heights[i] + text_height),
+                          f"{player_info.hand_value:,}", font=font, anchor="mm")
                 starting_x += width
                 img_index += 1
             starting_y += row_heights[i] + height_gap
@@ -203,6 +210,5 @@ if __name__ == "__main__":
         hand = blackjack.get_hand(test_member.id)
         for i in range(int(random.random() * 3)):
             blackjack.deal_card(hand)
-    blackjack.deal_dealer()
 
     blackjack.render_image().show()
