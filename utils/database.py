@@ -26,7 +26,7 @@ def get_user(user_id) -> User:
 
         return User(user_data[0], user_data[1], user_data[2], user_data[3], user_data[4])
 
-def get_all_users_xp():
+def get_all_users_xp() -> dict[int, int]:
     with sqlite3.connect('database.db') as connection:
         c = connection.cursor()
         c.execute('SELECT user_id, experience FROM members')
@@ -109,3 +109,6 @@ class User:
             return True
 
         return False
+
+    def __eq__(self, other) -> bool:
+        return self.id == other.id

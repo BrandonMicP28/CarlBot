@@ -9,7 +9,7 @@ from discord.ui import View, button
 class SummaryMenu:
     def __init__(self):
         pass
-def create_summary_menu(money_gained, money, xp_gained=0, xp=0):
+def create_summary_menu(money_gained, money, xp_gained=0, xp=0) -> discord.Embed:
     embed = discord.Embed(title="Summary!")
     embed.add_field(name="Money Gained:", value=f"${money:,} + ${money_gained:,} -> ${(money + money_gained):,}", inline=False)
     if xp_gained > 0:
@@ -42,7 +42,7 @@ class ReplayButton(View):
         self.stop()
 
 
-def generate_xp_bar(xp:int):
+def generate_xp_bar(xp:int) -> str:
     level = get_level(xp)
     xp_for_next_level = level_to_xp(level + 1) - level_to_xp(level)
     progress_to_next_level = xp - level_to_xp(level)

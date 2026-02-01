@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from cogs.games.finish_menu import generate_xp_bar
-from utils.database import get_user, get_leaderboard
+from utils.database import get_user, get_leaderboard, User
 from utils.leveling import get_level, level_to_xp
 
 
@@ -29,7 +29,6 @@ class Profiles(commands.Cog):
         em.set_thumbnail(url=target.display_avatar.url)
 
         await interaction.response.send_message(embed=em)
-
 
     @app_commands.command(name='leaderboard', description='Leaderboard of users (can be sorted by different categories)!')
     @app_commands.describe(category='What to sort by')
@@ -66,6 +65,30 @@ class Profiles(commands.Cog):
                             inline=False)
 
         await interaction.followup.send(embed=embed)
+
+    @app_commands.command(name='pay', description='Pay another member')
+    async def pay(self, interaction: discord.Interaction, target: discord.Member, amount: int):
+
+        if interaction.user.id == target.id:
+            await interaction.response.send_message(f"You Can't Pay Yourself!", ephemeral=True)
+            return
+
+        if amount <= 0:
+            await interaction.response.send_message(f"Invalid Amount.", ephemeral=True)
+            return
+
+        payer = get_user(interaction.user.id)
+
+        if payer.money < amount:
+            await interaction.response.send_message(f"Insufficient Funds", ephemeral=True)
+            return
+
+        payee = get_user(target.id)
+
+        payer.change_money(-amount)
+        payee.change_money(amount)
+
+        await interaction.response.send_message(f"Paid ${amount:,} to {target.mention}!")
 
 def get_level_color(level: int) -> str:
     if level < 10: return "\u001b[1;30m"  # Stone (Gray)

@@ -60,7 +60,7 @@ class JoinGameButtons(View):
         await interaction.response.send_message("Starting game...")
         self.stop()
 
-    def update_embed(self):
+    def update_embed(self) -> discord.Embed:
         embed = self.embed.copy()
         embed.add_field(name=f"Players ({len(self.players)}):", value=", ".join([player.name for player in self.players]), inline=False)
 

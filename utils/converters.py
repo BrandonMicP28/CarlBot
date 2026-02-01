@@ -4,7 +4,7 @@ import discord
 from PIL import Image
 
 
-def image_to_discord(img: Image.Image):
+def image_to_discord(img: Image.Image) -> discord.File:
     buffer = BytesIO()
     img.save(buffer, format='PNG')
     buffer.seek(0)
