@@ -27,9 +27,11 @@ def verify_guess(guess) -> bool:
 
 
 class Wordle:
-    def __init__(self, max_guesses: int):
+    def __init__(self, max_guesses: int = 6, answer: str = None):
         self.max_guesses = max_guesses
-        self.answer = generate_answer()
+        if answer is None:
+            answer = generate_answer()
+        self.answer = answer
         self.guesses = []
         self.letter_responses = {letter: "unknown" for letter in "QWERTYUIOPASDFGHJKLZXCVBNM"}
         self.game_state = "ongoing"
